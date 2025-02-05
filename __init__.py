@@ -22,7 +22,7 @@ jwt = JWTManager(app)
 
 @jwt.additional_claims_loader
 def add_claims_to_access_token(identity):
-    if identity == "admin":
+    if identity == "test":
         return {'role': 'admin'}
     return {'role': 'user'}
 
@@ -37,20 +37,23 @@ def login():
     username = request.json.get("username", None)
     password = request.json.get("password", None)
     
-    if not username or not password:
-        return jsonify({"msg": "Champs manquants"}), 400
-        
     if username != "test" or password != "test":
         return jsonify({"msg": "Mauvais utilisateur ou mot de passe"}), 401
 
+    # Créer un token avec le rôle admin
     access_token = create_access_token(identity=username)
-    return jsonify(access_token=access_token)
+    return jsonify({"access_token": access_token}), 200
 
 @app.route("/protected", methods=["GET"])
 @jwt_required
 def protected():
     current_user = get_jwt_identity()
-    return jsonify(logged_in_as=current_user), 200
+    claims = get_jwt()
+    return jsonify({
+        "status": "success",
+        "logged_in_as": current_user,
+        "role": claims.get('role')
+    }), 200
 
 @app.route("/admin", methods=["GET"])
 @jwt_required()
