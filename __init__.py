@@ -28,23 +28,27 @@ def add_claims_to_access_token(identity):
     return {'role': 'user'}
 
 
-@app.route('/')
+@app.route('/', methods=["GET"])
 def home():
     response = make_response(render_template('accueil.html'))
     response.headers['Content-Type'] = 'text/html'
     return response
 
 
-@app.route("/login", methods=["GET", "POST"])
+@app.route("/login", methods=["GET", "POST"], endpoint="login")
 def login():
     if request.method == "GET":
-        return render_template("login.html")
+        response = make_response(render_template('login.html'))
+        response.headers['Content-Type'] = 'text/html'
+        return response
 
     username = request.json.get("username", None)
     password = request.json.get("password", None)
     
     if username != "test" or password != "test":
-        return render_template('login.html', error="Invalid username or password"), 401
+        response = make_response(render_template('login.html', error="Nom d'utilisateur ou mot de passe incorrect"))
+        response.headers['Content-Type'] = 'text/html'
+        return response
 
     access_token = create_access_token(identity=username)
 
@@ -54,18 +58,21 @@ def login():
     return response
 
 
-@app.route("/protected", methods=["GET"])
+@app.route("/protected", methods=["GET"], endpoint="protected")
 @jwt_required
 def protected():
     current_user = get_jwt_identity()
     claims = get_jwt()
-    return render_template(
+    response = make_response(render_template(
         'protected.html',
         username=current_user,
         role=claims.get('role')
-    )
+    ))
+    response.headers['Content-Type'] = 'text/html'
+    return response
 
-@app.route("/admin", methods=["GET"])
+
+@app.route("/admin", methods=["GET"], endpoint="admin")
 @jwt_required
 def admin():
     claims = get_jwt()
