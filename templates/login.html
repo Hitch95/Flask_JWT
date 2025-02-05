@@ -13,7 +13,7 @@
         {% if error %}
         <div class="error">{{ error }}</div>
         {% endif %}
-        <form method="POST" action="{{ url_for('login') }}">
+        <form method="POST" action="{{ url_for('login') }}" enctype="application/x-www-form-urlencoded">
             <div class="form-group">
                 <label for="username">Username:</label>
                 <input type="text" id="username" name="username" required>
