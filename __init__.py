@@ -1,10 +1,10 @@
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, make_response
+from datetime import timedelta
 from flask_jwt_extended import (
     create_access_token, get_jwt_identity, jwt_required,
     JWTManager, get_jwt_claims
 )
-from datetime import timedelta
-import os
+
 
 app = Flask(__name__)
 
@@ -21,7 +21,9 @@ def add_claims_to_access_token(identity):
 
 @app.route('/')
 def hello_world():
-    return render_template('accueil.html')
+    response = make_response(render_template('accueil.html'))
+    response.headers['Content-Type'] = 'text/html'
+    return response
 
 @app.route("/login", methods=["POST"])
 def login():
@@ -44,12 +46,18 @@ def protected():
     return jsonify(logged_in_as=current_user), 200
 
 @app.route("/admin", methods=["GET"])
-@jwt_required
+@jwt_required()
 def admin():
     claims = get_jwt_claims()
     if claims['role'] != 'admin':
-        return jsonify({"msg": "Vous n'avez pas les droits pour accéder à cette page"}), 403
-    return jsonify({"msg": "Accès autorisé"}), 200
+        return jsonify({
+            "status": "error",
+            "msg": "Vous n'avez pas les droits pour accéder à cette page"
+        }), 403
+    return jsonify({
+        "status": "success",
+        "msg": "Accès autorisé"
+    }), 200
 
 if __name__ == "__main__":
     app.run(debug=True)
