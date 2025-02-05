@@ -35,30 +35,34 @@ def home():
     return response
 
 
-@app.route("/login", methods=["GET", "POST"], endpoint="login")
+@app.route("/login", methods=["GET"])
+def login_form():
+    return render_template("login.html")
+
+@app.route("/login", methods=["POST"])
 def login():
-    if request.method == "GET":
-        response = make_response(render_template('login.html'))
-        response.headers['Content-Type'] = 'text/html'
-        return response
+    username = request.form.get("username")
+    password = request.form.get("password")
 
-    if request.method == "POST":
-        if request.is_json:
-            username = request.json.get("username", None)
-            password = request.json.get("password", None)
-        else:
-            username = request.form.get("username", None)
-            password = request.form.get("password", None)
-    
-        if username != "test" or password != "test":
-            return render_template('login.html', error="Nom d'utilisateur ou mot de passe incorrect")
+    # Simulation d'une base de données
+    users = {
+        "test": {"password": "test", "role": "user"},
+        "admin": {"password": "admin", "role": "admin"},
+    }
 
-        access_token = create_access_token(identity=username)
+    user = users.get(username)
 
-        # Retourner un jeton JWT dans la réponse
-        response = make_response(redirect(url_for('protected')))
-        set_access_cookies(response, access_token)
-        return response
+    if not user or user["password"] != password:
+        return jsonify({"msg": "Mauvais utilisateur ou mot de passe"}), 401
+
+    # Création du token JWT avec le rôle
+    access_token = create_access_token(identity=username, additional_claims={"role": user["role"]})
+
+    # Création de la réponse avec le cookie contenant le JWT
+    response = make_response(redirect("/protected"))
+    response.set_cookie("access_token", access_token, httponly=True)  # Stocke le JWT en cookie HTTPOnly
+
+    return response
 
 
 @app.route("/protected", methods=["GET"], endpoint="protected")
