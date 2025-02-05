@@ -1,15 +1,22 @@
-from flask import Flask, render_template, jsonify, request, make_response
+from flask import Flask
+from flask import render_template
+from flask import jsonify
+from flask import make_response
+from flask import request
+
+from flask_jwt_extended import create_access_token
+from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import get_jwt_claims
+from flask_jwt_extended import jwt_required
+from flask_jwt_extended import JWTManager
+
 from datetime import timedelta
-from flask_jwt_extended import (
-    create_access_token, get_jwt_identity, jwt_required,
-    JWTManager, get_jwt_claims
-)
 
 
-app = Flask(__name__)
+app = Flask(__name__)                                                                                                                  
 
 # Configuration du module JWT
-app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY", "secret") # Ma clé privée
+app.config["JWT_SECRET_KEY"] = "Ma_clé_secrete"  # Ma clée privée
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1) # Durée du jeton
 jwt = JWTManager(app)
 
