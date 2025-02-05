@@ -6,7 +6,7 @@ from flask import request
 
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import get_jwt_identity
-from flask_jwt_extended import get_jwt_claims
+from flask_jwt_extended import get_jwt
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended import JWTManager
 
@@ -20,7 +20,7 @@ app.config["JWT_SECRET_KEY"] = "Ma_clé_secrete"  # Ma clée privée
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1) # Durée du jeton
 jwt = JWTManager(app)
 
-@jwt.user_claims_loader
+@jwt.additional_claims_loader
 def add_claims_to_access_token(identity):
     if identity == "admin":
         return {'role': 'admin'}
@@ -55,8 +55,8 @@ def protected():
 @app.route("/admin", methods=["GET"])
 @jwt_required()
 def admin():
-    claims = get_jwt_claims()
-    if claims['role'] != 'admin':
+    claims = get_jwt()
+    if claims.get("role") != "admin":
         return jsonify({
             "status": "error",
             "msg": "Vous n'avez pas les droits pour accéder à cette page"
